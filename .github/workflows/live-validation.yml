@@ -1,0 +1,73 @@
+name: Live validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Live suite to run
+        required: true
+        default: quickstart
+        type: choice
+        options:
+          - quickstart
+          - image
+          - lifecycle
+          - all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sandboxed-code-generation-live-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BL_WORKSPACE: ${{ secrets.BL_WORKSPACE }}
+      BL_API_KEY: ${{ secrets.BL_API_KEY }}
+      BL_REGION: ${{ vars.BL_REGION || 'us-pdx-1' }}
+      BL_SANDBOX_IMAGE: ${{ secrets.BL_SANDBOX_IMAGE || vars.BL_SANDBOX_IMAGE }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate required authentication
+        shell: bash
+        run: |
+          if [[ -z "$BL_WORKSPACE" || -z "$BL_API_KEY" ]]; then
+            echo "::error::Configure BL_WORKSPACE and BL_API_KEY repository secrets before running live validation."
+            exit 1
+          fi
+
+      - name: Validate the custom image reference
+        if: inputs.suite == 'image' || inputs.suite == 'lifecycle' || inputs.suite == 'all'
+        shell: bash
+        run: |
+          if [[ -z "$BL_SANDBOX_IMAGE" ]]; then
+            echo "::error::Configure the BL_SANDBOX_IMAGE repository secret for image or lifecycle validation."
+            exit 1
+          fi
+
+      - name: Run quickstart lifecycle validation
+        if: inputs.suite == 'quickstart' || inputs.suite == 'all'
+        run: npm run test:live:quickstart
+
+      - name: Run custom image validation
+        if: inputs.suite == 'image' || inputs.suite == 'all'
+        run: npm run test:live:image
+
+      - name: Run production lifecycle validation
+        if: inputs.suite == 'lifecycle' || inputs.suite == 'all'
+        run: npm run test:live

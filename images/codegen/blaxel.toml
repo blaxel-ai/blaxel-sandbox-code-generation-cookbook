@@ -1,0 +1,7 @@
+name = "codegen-lifecycle-runtime"
+type = "sandbox"
+description = "Non-root runtime for the sandboxed code generation cookbook"
+
+[runtime]
+generation = "mk3"
+memory = 4096

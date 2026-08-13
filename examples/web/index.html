@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Run the sandboxed code generation lifecycle from durable source to preview."
+    />
+    <title>Sandboxed code generation cookbook</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Blaxel cookbook</p>
+        <h1>Build the product loop. Delegate the execution layer.</h1>
+        <p class="lede">
+          The host keeps the durable source. A Blaxel Sandbox provides the
+          working environment where generated code is checked, corrected,
+          built, and previewed.
+        </p>
+        <button id="run" type="button">Run the build and repair loop</button>
+      </header>
+
+      <section aria-labelledby="status-title">
+        <div class="section-heading">
+          <h2 id="status-title">Lifecycle</h2>
+          <span id="state" class="state">Ready</span>
+        </div>
+        <ol id="steps" class="steps">
+          <li>Start from source stored by the host application.</li>
+          <li>Project the working copy into a retained Sandbox.</li>
+          <li>Run type-check and build processes.</li>
+          <li>Repair a code failure without resetting the Sandbox.</li>
+          <li>Export the artifact and connect the preview.</li>
+        </ol>
+        <pre id="log" aria-live="polite">Waiting to run.</pre>
+        <a id="sandbox-link" href="#" target="_blank" rel="noreferrer" hidden>
+          Inspect the retained Sandbox in Blaxel
+        </a>
+      </section>
+
+      <section aria-labelledby="preview-title">
+        <div class="section-heading">
+          <h2 id="preview-title">Preview</h2>
+        </div>
+        <div id="preview-placeholder" class="placeholder">
+          The compiled component will appear here.
+        </div>
+        <iframe
+          id="preview"
+          hidden
+          sandbox="allow-scripts allow-same-origin"
+          title="Generated component preview"
+        ></iframe>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
