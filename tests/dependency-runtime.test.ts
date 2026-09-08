@@ -59,6 +59,12 @@ describe("production dependency runtime hardening", () => {
       `
 [env]
 SAFE_VALUE = "present"
+BOOLEAN_VALUE = true
+NUMBER_VALUE = 42
+ARRAY_VALUE = ["one", "two"]
+INLINE_TABLE = { nested = "value" }
+MULTILINE_VALUE = """line one
+line two"""
 `,
     );
 
@@ -71,7 +77,14 @@ SAFE_VALUE = "present"
         input: `
           const coreEntry = process.argv[2];
           const { env } = await import(coreEntry);
-          console.log(JSON.stringify({ safeValue: env.SAFE_VALUE }));
+          console.log(JSON.stringify({
+            safeValue: env.SAFE_VALUE,
+            booleanValue: env.BOOLEAN_VALUE,
+            numberValue: env.NUMBER_VALUE,
+            arrayValue: env.ARRAY_VALUE,
+            inlineTable: env.INLINE_TABLE,
+            multilineValue: env.MULTILINE_VALUE,
+          }));
         `,
       },
     );
@@ -80,6 +93,11 @@ SAFE_VALUE = "present"
     expect(safeResult.stderr).toBe("");
     expect(JSON.parse(safeResult.stdout.trim())).toEqual({
       safeValue: "present",
+      booleanValue: true,
+      numberValue: 42,
+      arrayValue: ["one", "two"],
+      inlineTable: { nested: "value" },
+      multilineValue: "line one\nline two",
     });
 
     const maliciousWorkspace = mkdtempSync(
