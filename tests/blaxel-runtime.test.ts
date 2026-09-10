@@ -1,4 +1,4 @@
-import AdmZip from "adm-zip";
+import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it, vi } from "vitest";
 import { BlaxelRuntimeAdapter } from "../src/runtime/blaxel-runtime.js";
 
@@ -261,8 +261,9 @@ describe("BlaxelRuntimeAdapter", () => {
     expect(fixture.fs.writeTree).not.toHaveBeenCalled();
     expect(fixture.fs.writeBinary).toHaveBeenCalledOnce();
     const archiveBytes = fixture.fs.writeBinary.mock.calls[0]?.[1];
-    const archive = new AdmZip(archiveBytes);
-    expect(archive.readAsText("src/App.tsx")).toBe("export const App = 1;");
+    expect(archiveBytes).toBeInstanceOf(Uint8Array);
+    const archive = unzipSync(new Uint8Array(archiveBytes as Uint8Array));
+    expect(strFromU8(archive["src/App.tsx"]!)).toBe("export const App = 1;");
     expect(fixture.process.exec).toHaveBeenCalledWith(
       expect.objectContaining({
         command: expect.stringContaining("unzip -oq"),

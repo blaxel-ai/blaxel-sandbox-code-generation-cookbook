@@ -1,5 +1,5 @@
 import { SandboxInstance } from "@blaxel/core";
-import AdmZip from "adm-zip";
+import { zipSync } from "fflate";
 import { randomUUID } from "node:crypto";
 import type {
   CommandInput,
@@ -131,7 +131,7 @@ export class BlaxelRuntimeAdapter implements RuntimeAdapter {
       return;
     }
 
-    const archive = new AdmZip();
+    const entries: Record<string, Uint8Array> = {};
     for (const file of files) {
       if (
         file.path.startsWith("/") ||
@@ -139,11 +139,13 @@ export class BlaxelRuntimeAdapter implements RuntimeAdapter {
       ) {
         throw new Error(`Archive file path is not allowed: ${file.path}`);
       }
-      archive.addFile(file.path, Buffer.from(file.content, "utf8"));
+      entries[file.path] = new Uint8Array(Buffer.from(file.content, "utf8"));
     }
+    // fflate only writes archives here; extraction happens inside the sandbox with `unzip`.
+    const archive = Buffer.from(zipSync(entries, { level: 6 }));
 
     const archivePath = `/tmp/codegen-projection-${randomUUID()}.zip`;
-    await sandbox.fs.writeBinary(archivePath, archive.toBuffer());
+    await sandbox.fs.writeBinary(archivePath, archive);
     const result = await sandbox.process.exec({
       name: `project-files-${randomUUID()}`,
       command: `archive=${shellQuote(archivePath)}; trap 'rm -f "$archive"' EXIT; unzip -oq "$archive" -d ${shellQuote(destinationPath)}`,
