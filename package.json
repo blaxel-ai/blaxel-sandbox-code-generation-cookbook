@@ -62,7 +62,7 @@
     "fflate": "0.8.3"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "1.30.0",
+    "@modelcontextprotocol/sdk": "1.31.0",
     "@types/node": "^26.0.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
@@ -71,8 +71,8 @@
   },
   "overrides": {
     "js-yaml": "4.3.2",
-    "hono": "4.13.5",
-    "fast-uri": "3.1.7",
+    "hono": "4.13.7",
+    "fast-uri": "3.1.8",
     "qs": "6.16.0",
     "toml": "4.2.0"
   }
