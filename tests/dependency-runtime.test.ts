@@ -1,4 +1,5 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -91,12 +92,13 @@ line two"""
 
     expect(safeResult.status).toBe(0);
     expect(safeResult.stderr).toBe("");
+    // From @blaxel/core 0.3.20, blaxel.toml env values are exposed as strings, like process.env.
     expect(JSON.parse(safeResult.stdout.trim())).toEqual({
       safeValue: "present",
-      booleanValue: true,
-      numberValue: 42,
-      arrayValue: ["one", "two"],
-      inlineTable: { nested: "value" },
+      booleanValue: "true",
+      numberValue: "42",
+      arrayValue: '["one","two"]',
+      inlineTable: '{"nested":"value"}',
       multilineValue: "line one\nline two",
     });
 
@@ -138,5 +140,29 @@ polluted = "yes"
       polluted: null,
       inherited: null,
     });
+  });
+});
+
+describe("advisory regressions through @blaxel/core", () => {
+  const coreRequire = createRequire(
+    createRequire(import.meta.url).resolve("@blaxel/core"),
+  );
+  const expressRequire = createRequire(
+    createRequire(
+      coreRequire.resolve("@modelcontextprotocol/sdk/package.json"),
+    ).resolve("express"),
+  );
+
+  it("no longer ships toml (GHSA-9j65-hcg3-gc64, GHSA-9qmh-m7c6-f92p)", () => {
+    expect(() => coreRequire.resolve("toml")).toThrow(/cannot find module/i);
+  });
+
+  it("stringifies qs comma arrays with a non-callable toString (GHSA-6pq8-jhm2-2vcw)", () => {
+    const qs = expressRequire("qs");
+    for (const toString of [1, "x", {}]) {
+      expect(() =>
+        qs.stringify({ a: [{ toString }] }, { arrayFormat: "comma" }),
+      ).not.toThrow();
+    }
   });
 });
