@@ -57,7 +57,7 @@
     "test:live:image": "RUN_BLAXEL_IMAGE_TESTS=1 vitest run tests/live-image.test.ts"
   },
   "dependencies": {
-    "@blaxel/core": "0.3.32",
+    "@blaxel/core": "0.3.34",
     "dotenv": "^17.4.2",
     "fflate": "0.8.3"
   },
